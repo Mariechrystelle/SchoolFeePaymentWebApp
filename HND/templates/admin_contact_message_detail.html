@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block body_class %}admin-page{% endblock %}
+{% block content %}
+<section class="page-shell">
+  <h2 class="page-title">Contact Message Detail</h2>
+  <section class="card">
+    <p><strong>Name:</strong> {{ message.full_name }}</p>
+    <p><strong>Email:</strong> {{ message.email }}</p>
+    <p><strong>Subject:</strong> {{ message.subject }}</p>
+    <p><strong>Status:</strong> {{ message.status }}</p>
+    <p><strong>Sent At:</strong> {{ message.created_at.strftime('%Y-%m-%d %H:%M') if message.created_at else '' }}</p>
+    <p><strong>Message:</strong><br>{{ message.message }}</p>
+  </section>
+
+  <form class="form" method="post">
+    <label>Admin Feedback
+      <textarea name="admin_reply" rows="6" placeholder="Write feedback to the user...">{{ message.admin_reply or '' }}</textarea>
+    </label>
+    <div class="cta">
+      <button class="btn" type="submit" name="action" value="reply">Send Feedback</button>
+      {% if message.status == 'Flagged' %}
+      <button class="btn secondary" type="submit" name="action" value="approve">Approve Message</button>
+      {% endif %}
+      <button class="btn secondary" type="submit" name="action" value="reopen">Mark as Open</button>
+      <a class="btn secondary" href="{{ url_for('admin_contact_messages') }}">Back to Messages</a>
+    </div>
+  </form>
+
+  {% if message.admin_reply %}
+  <section class="card">
+    <p><strong>Last Feedback:</strong> {{ message.admin_reply }}</p>
+    <p><strong>Replied By:</strong> {{ message.replied_by or 'Admin' }}</p>
+    <p><strong>Replied At:</strong> {{ message.replied_at.strftime('%Y-%m-%d %H:%M') if message.replied_at else '' }}</p>
+  </section>
+  {% endif %}
+</section>
+{% endblock %}

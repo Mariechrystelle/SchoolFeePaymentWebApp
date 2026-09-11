@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="auth-shell">
+  <div class="auth-card auth-wide">
+    <h2>{{ t('student_pay_title') }}</h2>
+    <p class="auth-subtitle">{{ t('student_pay_subtitle') }}</p>
+    <form class="form auth-form" method="post" autocomplete="off">
+      <div class="two-col">
+        <label>{{ t('student_pay_full_name') }}
+          <div class="field-with-icon">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5z"/></svg>
+            </span>
+            <input type="text" value="{{ student_profile.full_name }}" readonly />
+          </div>
+        </label>
+        <label>{{ t('student_pay_dob') }}
+          <div class="field-with-icon">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M7 2h2v2h6V2h2v2h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h3V2zm13 8H4v10h16V10z"/></svg>
+            </span>
+            <input type="date" value="{{ student_profile.dob }}" readonly />
+          </div>
+        </label>
+      </div>
+      <div class="two-col">
+        <label>{{ t('student_pay_phone_mtn') }}
+          <div class="field-with-icon">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M6.6 10.8a15.6 15.6 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.2 11.4 11.4 0 0 0 3.6.6 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A18 18 0 0 1 3 4a1 1 0 0 1 1-1h3.4a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .6 3.6 1 1 0 0 1-.2 1z"/></svg>
+            </span>
+            <input type="tel" value="{{ student_profile.phone }}" readonly />
+          </div>
+        </label>
+        <label>{{ t('student_pay_specialty') }}
+          <div class="field-with-icon">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 3 2 8l10 5 8-4v6h2V8L12 3zm-7 9v4c0 2.8 4.1 5 7 5s7-2.2 7-5v-4l-7 3.5L5 12z"/></svg>
+            </span>
+            <input type="text" value="{{ student_profile.specialty }}" readonly />
+          </div>
+        </label>
+      </div>
+      <div class="two-col">
+        <label>{{ t('student_pay_matricule') }}
+          <div class="field-with-icon">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M3 5h18v14H3V5zm2 2v10h14V7H5zm2 2h5v2H7V9zm0 4h10v2H7v-2z"/></svg>
+            </span>
+            <input type="text" value="{{ student_profile.matricule }}" readonly />
+          </div>
+        </label>
+        <label>{{ t('student_pay_level_program') }}
+          <div class="field-with-icon">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4 4h16v4H4V4zm0 6h16v4H4v-4zm0 6h16v4H4v-4z"/></svg>
+            </span>
+            <input type="text" value="{{ student_profile.program_level }}" readonly />
+          </div>
+        </label>
+      </div>
+      <div class="two-col">
+        <label>{{ t('student_pay_purpose') }}
+          <div class="field-with-icon">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M5 3h14a2 2 0 0 1 2 2v14l-4-2-4 2-4-2-4 2V5a2 2 0 0 1 2-2z"/></svg>
+            </span>
+            <input type="text" name="purpose" value="{{ t('student_pay_purpose_value') }}" readonly />
+          </div>
+        </label>
+        <label>{{ t('student_pay_academic_year') }}
+          <div class="field-with-icon">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4 4h16v4H4V4zm0 6h16v4H4v-4zm0 6h16v4H4v-4z"/></svg>
+            </span>
+            <input type="text" value="{{ academic_year }}" readonly />
+          </div>
+        </label>
+      </div>
+      <div class="two-col">
+        <label>{{ t('student_dashboard_fee_total') }}
+          <div class="field-with-icon">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 1 3 5v6c0 5 3.8 9.7 9 11 5.2-1.3 9-6 9-11V5l-9-4zm1 6h3v2h-3v2h2a2 2 0 0 1 0 4h-2v2h-2v-2H8v-2h3v-2H9a2 2 0 0 1 0-4h2V5h2v2z"/></svg>
+            </span>
+            <input type="text" value="{{ fee_total }} XAF" readonly />
+          </div>
+        </label>
+        <label>{{ t('student_fee_paid') }}
+          <div class="field-with-icon">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6zm2 0v2h14V6H5zm0 4v8h14v-8H5zm3 2h5v2H8v-2z"/></svg>
+            </span>
+            <input type="text" value="{{ paid_amount }} XAF" readonly />
+          </div>
+        </label>
+      </div>
+      <label>{{ t('student_pay_balance') }}
+        <div class="field-with-icon">
+          <span class="field-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 1 3 5v6c0 5 3.8 9.7 9 11 5.2-1.3 9-6 9-11V5l-9-4zm1 6h3v2h-3v2h2a2 2 0 0 1 0 4h-2v2h-2v-2H8v-2h3v-2H9a2 2 0 0 1 0-4h2V5h2v2z"/></svg>
+          </span>
+          <input type="text" value="{{ fee_balance }} XAF" readonly />
+        </div>
+      </label>
+      <label>{{ t('student_pay_amount') }}
+        <div class="field-with-icon">
+          <span class="field-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 1 3 5v6c0 5 3.8 9.7 9 11 5.2-1.3 9-6 9-11V5l-9-4zm1 6h3v2h-3v2h2a2 2 0 0 1 0 4h-2v2h-2v-2H8v-2h3v-2H9a2 2 0 0 1 0-4h2V5h2v2z"/></svg>
+          </span>
+          <input type="number" step="0.01" min="50" name="amount" value="{{ entered_amount or '' }}" required />
+        </div>
+        <small class="password-policy">{{ t('student_pay_minimum_hint') }}</small>
+      </label>
+      <label>{{ t('student_pay_method') }}
+        <div class="field-with-icon">
+          <span class="field-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6zm2 0v2h14V6H5zm0 4v8h14v-8H5zm3 2h5v2H8v-2z"/></svg>
+          </span>
+          <select name="payment_method" required>
+            <option value="" disabled {% if not entered_method %}selected{% endif %}>{{ t('student_pay_method_placeholder') }}</option>
+            <option value="mtn" {% if entered_method == 'mtn' %}selected{% endif %}>{{ t('student_pay_method_mtn') }}</option>
+            <option value="orange" {% if entered_method == 'orange' %}selected{% endif %}>{{ t('student_pay_method_orange') }}</option>
+          </select>
+        </div>
+      </label>
+      <label>{{ t('student_pay_mtn_phone') }}
+        <div class="field-with-icon">
+          <span class="field-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M6.6 10.8a15.6 15.6 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.2 11.4 11.4 0 0 0 3.6.6 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A18 18 0 0 1 3 4a1 1 0 0 1 1-1h3.4a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .6 3.6 1 1 0 0 1-.2 1z"/></svg>
+          </span>
+          <input type="tel" name="payment_phone" autocomplete="off" placeholder="{{ t('student_pay_mtn_phone_placeholder') }}" required />
+        </div>
+      </label>
+      <label>{{ t('student_pay_pin') }}
+        <div class="field-with-icon">
+          <span class="field-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M6 10V7a6 6 0 0 1 12 0v3h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1zm2 0h8V7a4 4 0 0 0-8 0v3z"/></svg>
+          </span>
+          <input type="password" name="payment_pin" autocomplete="new-password" inputmode="numeric" pattern="\d{5}" maxlength="5" minlength="5" placeholder="{{ t('student_pay_pin_placeholder') }}" required />
+        </div>
+      </label>
+      <button class="btn" type="submit" name="action" value="pay">{{ t('student_pay_proceed') }}</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

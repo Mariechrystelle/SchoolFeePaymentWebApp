@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-shell">
+  <div id="payment-loading" class="loading-modal" aria-live="polite">
+    <div class="loading-card">
+      <div class="loading-spinner" aria-hidden="true"></div>
+      <h3>Processing Payment</h3>
+      <p id="payment-loading-text">{{ t('payment_processing_notice') }}</p>
+    </div>
+  </div>
+
+  <div id="payment-content" class="loading-hidden">
+  <div class="pay-success-head">
+    <div class="pay-success-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm-1.1 14.6-4-4 1.4-1.4 2.6 2.6 5-5 1.4 1.4z"/></svg>
+    </div>
+    <div>
+      <h2 class="page-title">{{ t('payment_success_title') }}</h2>
+      <p class="auth-subtitle">{{ t('payment_success_subtitle') }}</p>
+    </div>
+  </div>
+
+  {% set is_paid = (payment.status or '')|lower == 'paid' %}
+  {% set is_void = (payment.status or '')|lower == 'void' %}
+  {% set display_status = t('payment_processing_status') %}
+  {% if is_paid %}
+    {% set display_status = t('payment_paid_status') %}
+  {% elif is_void %}
+    {% set display_status = t('receipt_void_badge') %}
+  {% endif %}
+
+  <div class="card pay-success-card">
+    <p><strong>{{ t('payment_success_school') }}:</strong> {{ school_name }}</p>
+    <p><strong>{{ t('payment_success_amount_paid') }}:</strong> {{ payment.amount }} XAF</p>
+    <p><strong>{{ t('payment_success_transaction_id') }}:</strong> {{ payment.transaction_id }}</p>
+    <p><strong>{{ t('payment_success_date') }}:</strong> {{ payment.created_at.strftime('%Y-%m-%d %H:%M') if payment.created_at else '' }}</p>
+    <p><strong>{{ t('payment_success_academic_year') }}:</strong> {{ payment.academic_year or '' }}</p>
+    <p><strong>{{ t('payment_success_installment') }}:</strong> {{ payment.installment_label or '' }}</p>
+    <p><strong>{{ t('payment_success_balance') }}:</strong> {{ payment.balance_after or '' }} XAF</p>
+    <p><strong>{{ t('student_dashboard_status') }}:</strong> {{ display_status }}</p>
+  </div>
+
+  <div class="cta">
+    <a class="btn secondary" href="{{ url_for('student_receipt', transaction_id=payment.transaction_id) }}" target="_blank" rel="noopener">{{ t('payment_success_open_print') }}</a>
+    <a class="btn secondary" href="{{ url_for('student_dashboard') }}">{{ t('payment_success_back_dashboard') }}</a>
+  </div>
+  </div>
+</section>
+<script>
+  (function () {
+    const loading = document.getElementById("payment-loading");
+    const content = document.getElementById("payment-content");
+    const text = document.getElementById("payment-loading-text");
+    if (!loading || !content) return;
+
+    const statusUrl = "{{ url_for('student_payment_status', transaction_id=payment.transaction_id) }}";
+    const start = Date.now();
+    const maxWaitMs = 120000;
+    const pollEveryMs = 5000;
+
+    const showContent = () => {
+      loading.classList.add("loading-hidden");
+      content.classList.remove("loading-hidden");
+    };
+
+    const poll = () => {
+      fetch(statusUrl, { cache: "no-store" })
+        .then((res) => res.json())
+        .then((data) => {
+          const status = (data.status || "").toLowerCase();
+          if (status === "paid") {
+            showContent();
+            return;
+          }
+          if (status === "void") {
+            showContent();
+            return;
+          }
+          if (Date.now() - start >= maxWaitMs) {
+            if (text) {
+              text.textContent = "Still pending. Please check again later from your dashboard.";
+            }
+            showContent();
+            return;
+          }
+          window.setTimeout(poll, pollEveryMs);
+        })
+        .catch(() => {
+          if (Date.now() - start >= maxWaitMs) {
+            showContent();
+            return;
+          }
+          window.setTimeout(poll, pollEveryMs);
+        });
+    };
+
+    poll();
+  })();
+</script>
+{% endblock %}

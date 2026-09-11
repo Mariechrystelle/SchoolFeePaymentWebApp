@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-shell">
+<h2 class="page-title">Payments</h2>
+
+<form class="form" method="get">
+  <div class="two-col">
+    <label>Search
+      <input type="text" name="q" value="{{ q }}" placeholder="Transaction ID, student name, or matricule" />
+    </label>
+    <label>Status
+      <select name="status">
+        <option value="">All</option>
+        <option value="Paid" {% if status == 'Paid' %}selected{% endif %}>Approved</option>
+        <option value="Pending" {% if status == 'Pending' %}selected{% endif %}>Pending</option>
+        <option value="Void" {% if status == 'Void' %}selected{% endif %}>Rejected</option>
+      </select>
+    </label>
+    <label>Department
+      <select name="specialty">
+        <option value="">All</option>
+        {% for dept in departments %}
+        <option value="{{ dept }}" {% if request.args.get('specialty') == dept %}selected{% endif %}>{{ dept }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+  <button class="btn" type="submit">Filter</button>
+</form>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>Transaction ID</th>
+      <th>Student</th>
+      <th>Matricule</th>
+      <th>Department</th>
+      <th>Level</th>
+      <th>Amount</th>
+      <th>Installments</th>
+      <th>Status</th>
+      <th>Date</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for payment in payments %}
+    <tr>
+      <td>{{ payment.transaction_id }}</td>
+      <td>{{ payment.full_name }}</td>
+      <td>{{ payment.matricule }}</td>
+      <td>{{ payment.specialty or '' }}</td>
+      <td>{{ payment.program_level or '' }}</td>
+      <td>{{ payment.amount }}</td>
+      <td>
+        {% if payment.installment_status %}
+          {{ payment.installment_status[0] }} {{ payment.installment_status[1] }} {{ payment.installment_status[2] }}
+        {% else %}
+          —
+        {% endif %}
+      </td>
+      <td>
+        {% if payment.status == 'Paid' %}
+          Approved
+        {% elif payment.status == 'Void' %}
+          Rejected
+        {% else %}
+          {{ payment.status }}
+        {% endif %}
+      </td>
+      <td>{{ payment.created_at.strftime('%Y-%m-%d %H:%M') if payment.created_at else '' }}</td>
+      <td><a class="btn secondary" href="{{ url_for('admin_payment_detail', transaction_id=payment.transaction_id) }}">View</a></td>
+    </tr>
+    {% else %}
+    <tr>
+      <td colspan="11">No payments found.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+</section>
+{% endblock %}

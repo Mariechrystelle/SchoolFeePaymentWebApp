@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block body_class %}admin-page{% endblock %}
+{% block content %}
+<section class="page-shell">
+  <h2 class="page-title">Contact Messages</h2>
+  <form class="form" method="get">
+    <div class="two-col">
+      <label>Search
+        <input type="text" name="q" value="{{ q }}" placeholder="Name, email, subject" />
+      </label>
+      <label>Status
+        <select name="status">
+          <option value="" {% if not status %}selected{% endif %}>All</option>
+          <option value="Open" {% if status == 'Open' %}selected{% endif %}>Open</option>
+          <option value="Flagged" {% if status == 'Flagged' %}selected{% endif %}>Flagged</option>
+          <option value="Replied" {% if status == 'Replied' %}selected{% endif %}>Replied</option>
+        </select>
+      </label>
+    </div>
+    <button class="btn" type="submit">Apply</button>
+  </form>
+
+  <section class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Subject</th>
+            <th>Status</th>
+            <th>Open</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for msg in messages %}
+          <tr>
+            <td>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') if msg.created_at else '' }}</td>
+            <td>{{ msg.full_name }}</td>
+            <td>{{ msg.email }}</td>
+            <td>{{ msg.subject }}</td>
+            <td>{{ msg.status }}</td>
+            <td><a class="btn secondary" href="{{ url_for('admin_contact_message_detail', message_id=msg.id) }}">View</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7">No contact messages found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>
+{% endblock %}

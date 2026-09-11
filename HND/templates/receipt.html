@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% set hide_site_header = true %}
+{% set title = 'School Receipt' %}
+{% block content %}
+<div class="receipt receipt-sheet">
+  <div class="receipt-box receipt-digital receipt-classic receipt-portrait">
+    <div class="receipt-header">
+      <div class="receipt-branding">
+        <div class="receipt-logo">IUGET</div>
+        <div class="receipt-school-name">Institut Universitaire des Grandes Écoles des Tropiques</div>
+        <div class="receipt-subtitle">REÇU PAIEMENT</div>
+        <div class="receipt-year">Année académique: <strong>{{ payment.academic_year or '' }}</strong></div>
+      </div>
+      <div class="receipt-meta">
+        <div><strong>{{ t('receipt_date') }}:</strong> {{ payment.created_at.strftime('%d/%m/%Y') if payment.created_at else '' }}</div>
+        <div><strong>Heure:</strong> {{ payment.created_at.strftime('%H:%M') if payment.created_at else '' }}</div>
+        <div><strong>{{ t('receipt_number') }}:</strong> {{ payment.transaction_id }}</div>
+        <div><strong>{{ t('receipt_status') }}:</strong> {{ payment.status or '' }}</div>
+      </div>
+      <div class="receipt-photo">Photo</div>
+    </div>
+
+    <div class="receipt-divider"></div>
+
+    <table class="receipt-table receipt-info-table">
+      <tbody>
+        <tr>
+          <th>Matricule</th>
+          <td>{{ payment.matricule }}</td>
+          <th>Nom &amp; Prénom</th>
+          <td>{{ payment.full_name }}</td>
+        </tr>
+        <tr>
+          <th>Spécialité</th>
+          <td>{{ payment.specialty or '' }}</td>
+          <th>Niveau</th>
+          <td>{{ payment.program_level or '' }}</td>
+        </tr>
+        <tr>
+          <th>Téléphone</th>
+          <td>{{ payment.student_phone or '' }}</td>
+          <th>Date de naissance</th>
+          <td>
+            {% if payment.student_dob %}
+              {{ payment.student_dob.strftime('%d/%m/%Y') if payment.student_dob is not string else payment.student_dob }}
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th>Mode de paiement</th>
+          <td>{{ payment.payment_method or t('receipt_payment_method_value') }}</td>
+          <th>Montant payé</th>
+          <td>{{ payment.amount }} FCFA</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="receipt-divider"></div>
+    <div class="receipt-badge">SCOLARITÉ</div>
+
+    <table class="receipt-table receipt-fee-table">
+      <thead>
+        <tr>
+          <th>Frais</th>
+          <th>Montant</th>
+          <th>1ère Tranche</th>
+          <th>Payé</th>
+          <th>Reste</th>
+          <th>2ème Tranche</th>
+          <th>Payé</th>
+          <th>Reste</th>
+          <th>3ème Tranche</th>
+          <th>Payé</th>
+          <th>Reste</th>
+          <th>Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for fee in installment_breakdown %}
+        <tr>
+          <td>{{ fee.fee_type }}</td>
+          <td>{{ fee.total_fee }}</td>
+          <td>{{ fee.installments[0].amount }}</td>
+          <td>{{ fee.installments[0].paid }}</td>
+          <td>{{ fee.installments[0].remaining }}</td>
+          <td>{{ fee.installments[1].amount }}</td>
+          <td>{{ fee.installments[1].paid }}</td>
+          <td>{{ fee.installments[1].remaining }}</td>
+          <td>{{ fee.installments[2].amount }}</td>
+          <td>{{ fee.installments[2].paid }}</td>
+          <td>{{ fee.installments[2].remaining }}</td>
+          <td>{{ fee.status }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="receipt-total-row">
+          <td>Total Scolarité</td>
+          <td>{{ payment.student_fee_total or payment.fee_total or '' }}</td>
+          <td colspan="3">{{ payment.student_paid_amount or payment.amount }}</td>
+          <td colspan="3">{{ payment.student_balance_amount or payment.balance_after or '' }}</td>
+          <td colspan="3"></td>
+          <td>{{ 'OUI' if (payment.status or '')|lower == 'paid' else 'NON' }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="receipt-footer">
+      <div class="receipt-qr-block">
+        {% if qr_data_uri %}
+          <img class="receipt-qr" src="{{ qr_data_uri }}" alt="Receipt QR Code">
+        {% else %}
+          <div class="receipt-qr-fallback">QR</div>
+        {% endif %}
+      </div>
+      <div class="receipt-sign">
+        <div class="receipt-sign-label">Signature</div>
+        <div class="receipt-sign-line"></div>
+      </div>
+    </div>
+
+    {% if (payment.status or '')|lower == 'paid' %}
+      <div class="receipt-stamp" aria-hidden="true">
+        <svg viewBox="0 0 200 200" role="img" aria-label="Paid stamp">
+          <circle cx="100" cy="100" r="78" fill="none" stroke="currentColor" stroke-width="6" />
+          <circle cx="100" cy="100" r="62" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="6 8" />
+          <text x="100" y="92" text-anchor="middle" font-size="30" font-weight="700" letter-spacing="4" fill="currentColor">PAID</text>
+          <text x="100" y="122" text-anchor="middle" font-size="14" font-weight="600" letter-spacing="3" fill="currentColor">IUGET</text>
+        </svg>
+      </div>
+    {% endif %}
+
+    <p class="hint">{{ t('receipt_hint') }}</p>
+
+  </div>
+  <button class="btn" onclick="window.print()">{{ t('receipt_print') }}</button>
+  <a class="btn secondary" href="{{ url_for('student_dashboard') }}">{{ t('receipt_back_dashboard') }}</a>
+</div>
+{% endblock %}

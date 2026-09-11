@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block body_class %}register-page{% endblock %}
+{% block content %}
+<section class="auth-shell">
+  <div class="auth-card">
+    <h2>Student Registration</h2>
+    <p class="auth-subtitle">Accounts are created by IUGET administration. Please contact the school to receive login credentials.</p>
+    <div class="cta">
+      <a class="btn" href="{{ url_for('login') }}">Go to Login</a>
+      <a class="btn secondary" href="{{ url_for('contact') }}">Contact IUGET</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

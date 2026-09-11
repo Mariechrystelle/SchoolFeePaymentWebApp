@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-shell">
+<h2 class="page-title">Students</h2>
+
+<form class="form auth-form" method="post">
+  <input type="hidden" name="action" value="create" />
+  <div class="two-col">
+    <label>Full Name
+      <input type="text" name="full_name" required />
+    </label>
+    <label>Matricule
+      <input type="text" name="matricule" required />
+    </label>
+  </div>
+  <div class="two-col">
+    <label>Department
+      {% if departments and departments|length %}
+      <select name="specialty" required>
+        <option value="" disabled selected>Select department</option>
+        {% for dept in departments %}
+        <option value="{{ dept }}">{{ dept }}</option>
+        {% endfor %}
+      </select>
+      {% else %}
+      <input type="text" name="specialty" required />
+      {% endif %}
+    </label>
+    <label>Level / Program
+      <input type="text" name="program_level" required />
+    </label>
+  </div>
+  <div class="two-col">
+    <label>Phone
+      <input type="text" name="phone" />
+    </label>
+    <label>Date of Birth
+      <input type="date" name="dob" required />
+    </label>
+  </div>
+  <label>Email 
+    <input type="email" name="email" />
+  </label>
+  <button class="btn" type="submit">Register Student</button>
+</form>
+
+<form class="form" method="get">
+  <div class="two-col">
+    <label>Search
+      <input type="text" name="q" value="{{ q }}" placeholder="Name or matricule" />
+    </label>
+    <label>Department
+      <select name="specialty">
+        <option value="">All</option>
+        {% for dept in departments %}
+        <option value="{{ dept }}" {% if request.args.get('specialty') == dept %}selected{% endif %}>{{ dept }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+  <div class="two-col">
+    <label>Level / Program
+      <input type="text" name="program_level" value="{{ request.args.get('program_level','') }}" />
+    </label>
+    <label>Payment Status
+      <select name="payment_status">
+        <option value="">All</option>
+        <option value="paid" {% if request.args.get('payment_status') == 'paid' %}selected{% endif %}>Paid</option>
+        <option value="partial" {% if request.args.get('payment_status') == 'partial' %}selected{% endif %}>Partial</option>
+        <option value="unpaid" {% if request.args.get('payment_status') == 'unpaid' %}selected{% endif %}>Unpaid</option>
+      </select>
+    </label>
+  </div>
+  <button class="btn" type="submit">Filter</button>
+</form>
+
+{% if payment_status == 'partial' %}
+<section class="summary">
+  <article class="card">
+    <p><strong>Total Paid (Partial Students):</strong> {{ '%.2f'|format(total_paid or 0) }} XAF</p>
+  </article>
+</section>
+{% endif %}
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Matricule</th>
+      <th>Specialty</th>
+      <th>Level</th>
+      <th>Paid Amount</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for student in students %}
+    <tr>
+      <td>{{ student.full_name }}</td>
+      <td>{{ student.matricule }}</td>
+      <td>{{ student.specialty }}</td>
+      <td>{{ student.program_level or student.class or '' }}</td>
+      <td>{{ '%.2f'|format(student.paid_amount or 0) }}</td>
+      <td>
+        {% if (student.fee_total or 0) > 0 and (student.paid_amount or 0) >= (student.fee_total or 0) %}
+          Fee Completed
+        {% elif (student.paid_amount or 0) > 0 %}
+          Partial Payment
+        {% else %}
+          Not Paid
+        {% endif %}
+      </td>
+      <td>
+        <a class="btn secondary" href="{{ url_for('admin_student_detail', student_id=student.id) }}">View Details</a>
+        <form method="post" action="{{ url_for('admin_delete_student', student_id=student.id) }}" style="display:inline;" onsubmit="return confirm('Delete this student?');">
+          <button class="btn secondary" type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr>
+      <td colspan="7">No students found.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+</section>
+{% endblock %}

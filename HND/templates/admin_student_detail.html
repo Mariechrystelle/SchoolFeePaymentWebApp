@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-shell">
+<h2 class="page-title">Student Detail</h2>
+
+<form class="form" method="post">
+  <div class="two-col">
+    <label>Full Name
+      <input type="text" name="full_name" value="{{ student.full_name }}" required />
+    </label>
+    <label>Phone
+      <input type="text" name="phone" value="{{ student.phone }}" required />
+    </label>
+  </div>
+  <div class="two-col">
+    <label>Specialty
+      {% if course_options and course_options|length %}
+      <select name="specialty" required>
+        <option value="" disabled {% if not student.specialty %}selected{% endif %}>Select department</option>
+        {% for dept in course_options %}
+        <option value="{{ dept }}" {% if student.specialty == dept %}selected{% endif %}>{{ dept }}</option>
+        {% endfor %}
+      </select>
+      {% else %}
+      <input type="text" name="specialty" value="{{ student.specialty }}" required />
+      {% endif %}
+    </label>
+    <label>Level / Program
+      <select name="program_level" required>
+        {% set current_program = student.program_level or student.class or '' %}
+        <option value="" disabled {% if not current_program %}selected{% endif %}>Select level/program</option>
+        <option value="Level 1" {% if current_program == 'Level 1' %}selected{% endif %}>Level 1</option>
+        <option value="Level 2" {% if current_program == 'Level 2' %}selected{% endif %}>Level 2</option>
+        <option value="Level 3" {% if current_program == 'Level 3' %}selected{% endif %}>Level 3</option>
+        <option value="HND" {% if current_program == 'HND' %}selected{% endif %}>HND</option>
+        <option value="Bachelor" {% if current_program == 'Bachelor' %}selected{% endif %}>Bachelor</option>
+        <option value="Master" {% if current_program == 'Master' %}selected{% endif %}>Master</option>
+      </select>
+    </label>
+  </div>
+  <div class="two-col">
+    <label>Matricule
+      <input type="text" name="matricule" value="{{ student.matricule }}" required />
+    </label>
+    <label>Date of Birth
+      <input type="date" name="dob" value="{{ student.dob.strftime('%Y-%m-%d') if student.dob else '' }}" required />
+    </label>
+  </div>
+<button class="btn" type="submit">Update Student</button>
+</form>
+
+<h3 class="section-title">Fee Breakdown</h3>
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>Fee Type</th>
+      <th>Total Fee</th>
+      <th>1st Installment</th>
+      <th>Paid</th>
+      <th>Remaining</th>
+      <th>2nd Installment</th>
+      <th>Paid</th>
+      <th>Remaining</th>
+      <th>3rd Installment</th>
+      <th>Paid</th>
+      <th>Remaining</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in fee_breakdown %}
+    <tr>
+      <td>{{ row.fee_type }}</td>
+      <td>{{ row.total_fee }}</td>
+      <td>{{ row.installments[0].amount }}</td>
+      <td>{{ row.installments[0].paid }}</td>
+      <td>{{ row.installments[0].remaining }}</td>
+      <td>{{ row.installments[1].amount }}</td>
+      <td>{{ row.installments[1].paid }}</td>
+      <td>{{ row.installments[1].remaining }}</td>
+      <td>{{ row.installments[2].amount }}</td>
+      <td>{{ row.installments[2].paid }}</td>
+      <td>{{ row.installments[2].remaining }}</td>
+      <td>{{ row.status }}</td>
+    </tr>
+    {% else %}
+    <tr>
+      <td colspan="12">No fee items available for this student.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<h3 class="section-title">Payment History</h3>
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>Transaction ID</th>
+      <th>Amount</th>
+      <th>Purpose</th>
+      <th>Status</th>
+      <th>Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in payments %}
+    <tr>
+      <td>{{ p.transaction_id }}</td>
+      <td>{{ p.amount }}</td>
+      <td>{{ p.purpose }}</td>
+      <td>{{ 'Approved' if p.status == 'Paid' else p.status }}</td>
+      <td>{{ p.created_at.strftime('%Y-%m-%d %H:%M') if p.created_at else '' }}</td>
+    </tr>
+    {% else %}
+    <tr>
+      <td colspan="5">No payments for this student.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+</section>
+{% endblock %}

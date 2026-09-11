@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-shell">
+  <h2 class="page-title">Departments</h2>
+
+  <form class="form auth-form" method="post">
+    {% if edit_department %}
+      <input type="hidden" name="action" value="update" />
+      <input type="hidden" name="department_id" value="{{ edit_department.id }}" />
+    {% else %}
+      <input type="hidden" name="action" value="add" />
+    {% endif %}
+    <div class="two-col">
+      <label>Department Name
+        <input type="text" name="name" value="{{ edit_department.name if edit_department else '' }}" required />
+      </label>
+      <label>Department Code (optional)
+        <input type="text" name="code" value="{{ edit_department.code if edit_department else '' }}" />
+      </label>
+    </div>
+    <div class="cta">
+      <button class="btn" type="submit">{{ 'Update Department' if edit_department else 'Add Department' }}</button>
+      {% if edit_department %}
+        <a class="btn secondary" href="{{ url_for('admin_departments') }}">Cancel</a>
+      {% endif %}
+    </div>
+  </form>
+
+  <div class="table-wrap" style="margin-top: 24px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Department Name</th>
+          <th>Code</th>
+          <th>Number of Students</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for dept in departments %}
+        <tr>
+          <td>{{ dept.name }}</td>
+          <td>{{ dept.code or '' }}</td>
+          <td>{{ dept.student_count or 0 }}</td>
+          <td>
+            {% if view_department and view_department.id == dept.id %}
+              <a class="btn secondary" href="{{ url_for('admin_departments') }}">Hide</a>
+            {% else %}
+              <a class="btn secondary" href="{{ url_for('admin_departments', view_id=dept.id) }}">View</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">No departments yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if view_department %}
+  <section class="card" style="margin-top: 20px;">
+    <h3>Department Details</h3>
+    <p><strong>Name:</strong> {{ view_department.name }}</p>
+    <p><strong>Code:</strong> {{ view_department.code or '' }}</p>
+    <div class="cta dept-actions">
+      <a class="btn secondary" href="{{ url_for('admin_departments', edit_id=view_department.id) }}">Edit</a>
+      <form method="post" onsubmit="return confirm('Delete this department?');" style="margin:0;">
+        <input type="hidden" name="action" value="delete" />
+        <input type="hidden" name="department_id" value="{{ view_department.id }}" />
+        <button class="btn secondary" type="submit">Delete</button>
+      </form>
+    </div>
+
+    <h3 class="section-title" style="margin-top: 18px;">Students in Department</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Matricule</th>
+            <th>Level</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in view_students %}
+          <tr>
+            <td>{{ s.full_name }}</td>
+            <td>{{ s.matricule }}</td>
+            <td>{{ s.program_level }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3">No students in this department.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endif %}
+</section>
+{% endblock %}

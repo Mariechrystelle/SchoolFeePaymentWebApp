@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% block body_class %}admin-page{% endblock %}
+{% block content %}
+<section class="admx-root">
+  <header class="admx-topbar">
+    <div class="admx-branding">
+      <span class="admx-brand-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 8-4v7h2V7L12 2zm-6 9v5c0 2.6 3.5 5 6 5s6-2.4 6-5v-5l-6 3-6-3z"/></svg>
+      </span>
+      <div>
+        <div class="admx-logo">IUGET Admin Dashboard</div>
+        <small class="admx-subtitle">Finance and Student Payment Control</small>
+      </div>
+    </div>
+    <div class="admx-user-meta">
+      <span class="admx-user">Welcome, {{ session.get('name', 'Admin') }}</span>
+    </div>
+  </header>
+
+  <div class="admx-layout">
+    <aside class="admx-sidebar">
+      <a class="admx-nav active" href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+      <a class="admx-nav" href="{{ url_for('admin_payments') }}">Payments</a>
+      <a class="admx-nav" href="{{ url_for('admin_students') }}">Students</a>
+      <a class="admx-nav" href="{{ url_for('admin_departments') }}">Departments</a>
+      <a class="admx-nav" href="{{ url_for('admin_fees') }}">Fees</a>
+      <a class="admx-nav" href="{{ url_for('admin_contact_messages') }}">Messages{% if new_contact_alerts %} ({{ new_contact_alerts }}){% endif %}</a>
+      <a class="admx-nav" href="{{ url_for('admin_reports') }}">Reports</a>
+      <a class="admx-nav" href="{{ url_for('admin_payments', status='Pending') }}">Pending</a>
+    </aside>
+
+    <main class="admx-main">
+      <section class="admx-kpis">
+        <article class="admx-kpi">
+          <h4>Total Students</h4>
+          <p>{{ totals.total_students }}</p>
+        </article>
+        <article class="admx-kpi">
+          <h4>Total Collected</h4>
+          <p>{{ totals.total_collected }}</p>
+        </article>
+        <article class="admx-kpi">
+          <h4>Today's Paid Amount</h4>
+          <p>{{ '%.2f'|format(todays.today_amount or 0) }} XAF</p>
+        </article>
+        <article class="admx-kpi">
+          <h4><a href="{{ url_for('admin_students', payment_status='paid') }}">Students Fully Paid</a></h4>
+          <p>{{ totals.students_paid }}</p>
+        </article>
+        <article class="admx-kpi">
+          <h4><a href="{{ url_for('admin_students', payment_status='unpaid') }}">Students Not Paid</a></h4>
+          <p>{{ totals.students_unpaid }}</p>
+        </article>
+        <article class="admx-kpi">
+          <h4><a href="{{ url_for('admin_students', payment_status='partial') }}">Partial Payments</a></h4>
+          <p>{{ totals.students_partial }}</p>
+        </article>
+      </section>
+
+      <section class="admin-charts-grid">
+        <article class="admx-table-panel">
+          <h3>Weekly Amount Trend</h3>
+          <div class="chart-toolbar"></div>
+          {% set ns = namespace(max_val=0, points=[]) %}
+          {% for i in range(0, weekly_labels|length) %}
+            {% set day_total = weekly_paid_amounts[i] + weekly_pending_amounts[i] %}
+            {% if day_total > ns.max_val %}
+              {% set ns.max_val = day_total %}
+            {% endif %}
+            {% set _ = ns.points.append(day_total) %}
+          {% endfor %}
+          {% set scale_max = ns.max_val if ns.max_val > 0 else 1 %}
+          <div class="weekly-chart">
+            <svg class="wk-svg" viewBox="0 0 700 240" preserveAspectRatio="none">
+              <line class="wk-baseline" x1="70" y1="200" x2="670" y2="200" />
+              {% set y_steps = [0.25, 0.5, 0.75, 1.0] %}
+              {% for step in y_steps %}
+                {% set y = 200 - (step * 140) %}
+                <line class="wk-grid" x1="70" y1="{{ y }}" x2="670" y2="{{ y }}" />
+                {% set raw = scale_max * step %}
+                {% set k = raw / 1000 %}
+                {% set k_label = "%.1f"|format(k) %}
+                {% if k_label.endswith('.0') %}
+                  {% set k_label = k_label[:-2] %}
+                {% endif %}
+                <text class="wk-axis" x="30" y="{{ y + 4 }}" text-anchor="start">{{ k_label }}K</text>
+              {% endfor %}
+              <text class="wk-axis" x="30" y="204" text-anchor="start">0</text>
+              {% for i in range(0, weekly_labels|length) %}
+                {% set total_val = ns.points[i] %}
+                {% set bar_h = (total_val / scale_max * 140) %}
+                {% set base_x = 85 + (i * 80) %}
+                <rect class="wk-bar" x="{{ base_x }}" y="{{ 200 - bar_h }}" width="38" height="{{ bar_h }}" rx="6" />
+                <text class="wk-axis" x="{{ base_x + 19 }}" y="222" text-anchor="middle">{{ weekly_labels[i] }}</text>
+              {% endfor %}
+              {% set path_points = [] %}
+              {% for i in range(0, weekly_labels|length) %}
+                {% set total_val = ns.points[i] %}
+                {% set x = 85 + (i * 80) + 19 %}
+                {% set y = 200 - (total_val / scale_max * 140) %}
+                {% set _ = path_points.append(x|string + "," + y|string) %}
+              {% endfor %}
+              <polyline class="wk-line" points="{{ ' '.join(path_points) }}" />
+            </svg>
+          </div>
+        </article>
+        <article class="admx-table-panel">
+          <h3>Status Overview</h3>
+          {% set total_status = (status_counts.Paid or 0) + (status_counts.Pending or 0) %}
+          {% set paid_pct = ((status_counts.Paid or 0) / total_status * 100) if total_status else 0 %}
+          {% set pending_pct = ((status_counts.Pending or 0) / total_status * 100) if total_status else 0 %}
+          <div class="status-row">
+            <span>Paid</span>
+            <span>{{ status_counts.Paid or 0 }}</span>
+          </div>
+          <div class="status-track">
+            <div class="status-fill paid" style="width: {{ paid_pct|round(2) }}%;"></div>
+          </div>
+          <div class="status-row">
+            <span>Pending</span>
+            <span>{{ status_counts.Pending or 0 }}</span>
+          </div>
+          <div class="status-track">
+            <div class="status-fill pending" style="width: {{ pending_pct|round(2) }}%;"></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="admx-table-panel">
+        <h3>Recent Transactions</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Transaction ID</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Open</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in recent %}
+              <tr>
+                <td>{{ row.transaction_id }}</td>
+                <td>{{ row.amount }}</td>
+                <td>
+                  {% if row.status == 'Paid' %}
+                    Approved
+                  {% elif row.status == 'Void' %}
+                    Void
+                  {% else %}
+                    {{ row.status }}
+                  {% endif %}
+                </td>
+                <td>{{ row.created_at_label }}</td>
+                <td><a class="btn secondary" href="{{ url_for('admin_payment_detail', transaction_id=row.transaction_id) }}">View</a></td>
+              </tr>
+              {% else %}
+              <tr><td colspan="5">No transactions yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="admx-table-panel">
+        <h3>Admin Maintenance</h3>
+        <form method="post" action="{{ url_for('admin_clear_payments') }}" onsubmit="return confirm('This will delete ALL payments and reset balances. Continue?');">
+          <button class="btn secondary" type="submit">Clear All Payments</button>
+        </form>
+      </section>
+
+    </main>
+  </div>
+</section>
+{% endblock %}

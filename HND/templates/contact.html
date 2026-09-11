@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="auth-shell">
+  <div class="auth-card auth-wide">
+    <h2>Contact Us</h2>
+    <form class="form auth-form" method="post">
+      <div class="two-col">
+        <label>Full Name
+          <input type="text" name="full_name" value="{{ form_data.full_name if form_data else '' }}" required />
+        </label>
+        <label>Email
+          <input type="email" name="email" value="{{ form_data.email if form_data else '' }}" required />
+        </label>
+      </div>
+      <label>Subject
+        <input type="text" name="subject" value="{{ form_data.subject if form_data else '' }}" required />
+      </label>
+      <label>Message
+        <textarea name="message" rows="6" required>{{ form_data.message if form_data else '' }}</textarea>
+      </label>
+      <button class="btn" type="submit">Send Message</button>
+    </form>
+
+    {% if message_history %}
+    <section class="card" style="margin-top: 1rem;">
+      <h3>Your Previous Messages</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Subject</th>
+              <th>Status</th>
+              <th>Admin Feedback</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in message_history %}
+            <tr>
+              <td>{{ row.created_at.strftime('%Y-%m-%d %H:%M') if row.created_at else '' }}</td>
+              <td>{{ row.subject }}</td>
+              <td>{{ row.status }}</td>
+              <td>
+                {% if row.admin_reply %}
+                  {{ row.admin_reply }}
+                  <br>
+                  <small>By {{ row.replied_by or 'Admin' }}{% if row.replied_at %} on {{ row.replied_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}</small>
+                {% else %}
+                  No feedback yet.
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

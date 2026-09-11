@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-shell">
+<h2 class="page-title">Payment Details</h2>
+
+<div class="card">
+  <h3 class="section-title">Transaction Summary</h3>
+  <div class="table-wrap">
+    <table>
+      <tbody>
+        <tr><th>Transaction ID</th><td>{{ payment.transaction_id }}</td></tr>
+        <tr>
+          <th>Status</th>
+          <td>
+            {% if payment.status == 'Paid' %}
+              <span class="status-tag success">Approved</span>
+            {% elif payment.status == 'Pending' %}
+              <span class="status-tag pending">Pending</span>
+            {% else %}
+              <span class="status-tag void">Rejected</span>
+            {% endif %}
+          </td>
+        </tr>
+        <tr><th>Amount Paid</th><td>{{ payment.amount }} FCFA</td></tr>
+        <tr><th>Academic Year</th><td>{{ payment.academic_year or '' }}</td></tr>
+        <tr><th>Remaining Balance</th><td>{{ payment.balance_after or '' }} FCFA</td></tr>
+        <tr><th>Date</th><td>{{ payment.created_at.strftime('%Y-%m-%d %H:%M') if payment.created_at else '' }}</td></tr>
+        <tr><th>Payment Method</th><td>{{ payment.payment_method or 'Mobile Money' }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 18px;">
+  <h3 class="section-title">Student Information</h3>
+  <div class="table-wrap">
+    <table>
+      <tbody>
+        <tr><th>Name</th><td>{{ payment.full_name }}</td></tr>
+        <tr><th>Matricule</th><td>{{ payment.matricule }}</td></tr>
+        <tr><th>Specialty / Department</th><td>{{ payment.specialty }}</td></tr>
+        <tr><th>Phone Number</th><td>{{ payment.phone }}</td></tr>
+        <tr><th>Date of Birth</th><td>{{ payment.dob }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 18px;">
+  <h3 class="section-title">Fee Breakdown / Installments</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Fee Type</th>
+          <th>Total Fee</th>
+          <th>1st Installment</th>
+          <th>Paid</th>
+          <th>Remaining</th>
+          <th>2nd Installment</th>
+          <th>Paid</th>
+          <th>Remaining</th>
+          <th>3rd Installment</th>
+          <th>Paid</th>
+          <th>Remaining</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in installment_breakdown %}
+        <tr>
+          <td>{{ row.fee_type }}</td>
+          <td>{{ row.total_fee }} FCFA</td>
+          <td>{{ row.installments[0].amount }} FCFA</td>
+          <td>{{ row.installments[0].paid }} FCFA</td>
+          <td>{{ row.installments[0].remaining }} FCFA</td>
+          <td>{{ row.installments[1].amount }} FCFA</td>
+          <td>{{ row.installments[1].paid }} FCFA</td>
+          <td>{{ row.installments[1].remaining }} FCFA</td>
+          <td>{{ row.installments[2].amount }} FCFA</td>
+          <td>{{ row.installments[2].paid }} FCFA</td>
+          <td>{{ row.installments[2].remaining }} FCFA</td>
+          <td>{{ row.status }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="12">No fee data.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="cta">
+  <a class="btn secondary" href="{{ url_for('admin_payments') }}">Back to Payments</a>
+  {% if payment.status != 'Paid' and payment.status != 'Void' %}
+  <form method="post" action="{{ url_for('admin_confirm_payment', transaction_id=payment.transaction_id) }}">
+    <button class="btn" type="submit">Approve Payment</button>
+  </form>
+  {% endif %}
+</div>
+</section>
+{% endblock %}

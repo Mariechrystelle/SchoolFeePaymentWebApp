@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-shell">
+  <h2 class="page-title">Fee Structure</h2>
+
+  <form class="form auth-form" method="post">
+    {% if edit_fee %}
+      <input type="hidden" name="action" value="update" />
+      <input type="hidden" name="fee_id" value="{{ edit_fee.id }}" />
+    {% else %}
+      <input type="hidden" name="action" value="add" />
+    {% endif %}
+    <label>Department
+      <select name="department_id" required>
+        <option value="" disabled {% if not edit_fee %}selected{% endif %}>Select department</option>
+        {% for dept in departments %}
+        <option value="{{ dept.id }}" {% if edit_fee and edit_fee.department_id == dept.id %}selected{% endif %}>{{ dept.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Level / Program
+      <input type="text" name="program_level" placeholder="e.g. HND 1" value="{{ edit_fee.program_level if edit_fee else '' }}" required />
+    </label>
+    <label>Fee Type
+      <input type="text" name="fee_type" value="{{ edit_fee.fee_type if edit_fee else '' }}" required />
+    </label>
+    <label>Total Fee (XAF)
+      <input type="number" step="0.01" min="0" name="yearly_fee" value="{{ edit_fee.total_fee if edit_fee else '' }}" required />
+    </label>
+    <div class="two-col">
+      <label>1st Installment (XAF)
+        <input type="number" step="0.01" min="0" name="installment1" value="{{ edit_fee.installment1 if edit_fee else '' }}" />
+      </label>
+      <label>2nd Installment (XAF)
+        <input type="number" step="0.01" min="0" name="installment2" value="{{ edit_fee.installment2 if edit_fee else '' }}" />
+      </label>
+    </div>
+    <label>3rd Installment (XAF)
+      <input type="number" step="0.01" min="0" name="installment3" value="{{ edit_fee.installment3 if edit_fee else '' }}" />
+    </label>
+    <div class="cta">
+      <button class="btn" type="submit">{{ 'Update Fee' if edit_fee else 'Save Fee' }}</button>
+      {% if edit_fee %}
+        <a class="btn secondary" href="{{ url_for('admin_fees') }}">Cancel</a>
+      {% endif %}
+    </div>
+  </form>
+
+  <div class="table-wrap" style="margin-top: 24px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Department</th>
+          <th>Level</th>
+          <th>Fee Type</th>
+          <th>Total Fee</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for fee in fees %}
+        <tr>
+          <td>{{ fee.department_name }}</td>
+          <td>{{ fee.program_level }}</td>
+          <td>{{ fee.fee_type }}</td>
+          <td>{{ fee.total_fee }}</td>
+          <td>
+            {% if view_fee and view_fee.id == fee.id %}
+              <a class="btn secondary" href="{{ url_for('admin_fees') }}">Hide</a>
+            {% else %}
+              <a class="btn secondary" href="{{ url_for('admin_fees', view_id=fee.id) }}">View</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">No fee structure yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if view_fee %}
+  <section class="card" style="margin-top: 20px;">
+    <h3>Fee Details</h3>
+    <p><strong>Department:</strong> {{ view_fee.department_name }}</p>
+    <p><strong>Level:</strong> {{ view_fee.program_level }}</p>
+    <p><strong>Fee Type:</strong> {{ view_fee.fee_type }}</p>
+    <div class="table-wrap" style="margin-top: 12px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Total Fee</th>
+            <th>1st Installment</th>
+            <th>2nd Installment</th>
+            <th>3rd Installment</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ view_fee.total_fee }}</td>
+            <td>{{ view_fee.installment1 or '-' }}</td>
+            <td>{{ view_fee.installment2 or '-' }}</td>
+            <td>{{ view_fee.installment3 or '-' }}</td>
+            <td class="fee-actions">
+              <a class="btn secondary" href="{{ url_for('admin_fees', edit_id=view_fee.id) }}">Edit</a>
+              <form method="post" onsubmit="return confirm('Delete this fee record?');" style="margin:0;">
+                <input type="hidden" name="action" value="delete" />
+                <input type="hidden" name="fee_id" value="{{ view_fee.id }}" />
+                <button class="btn secondary" type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endif %}
+</section>
+{% endblock %}

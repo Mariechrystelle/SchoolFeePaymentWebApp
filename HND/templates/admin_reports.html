@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block body_class %}admin-page{% endblock %}
+{% block content %}
+<section class="page-shell">
+  <h2 class="page-title">Financial Reports</h2>
+  <form class="form" method="get">
+    <div class="two-col">
+      <label>Date From
+        <input type="date" name="date_from" value="{{ date_from }}" />
+      </label>
+      <label>Date To
+        <input type="date" name="date_to" value="{{ date_to }}" />
+      </label>
+    </div>
+    <div class="cta">
+      <button class="btn" type="submit">Apply Filter</button>
+      <a class="btn secondary" href="{{ url_for('admin_reports_export_csv', date_from=date_from, date_to=date_to) }}">Export CSV</a>
+    </div>
+  </form>
+
+  <section class="summary">
+    <article class="card">
+      <p><strong>Total Payments:</strong> {{ summary.total_payments }}</p>
+      <p><strong>Total Amount:</strong> {{ '%.2f'|format(summary.total_amount) }} XAF</p>
+    </article>
+    <article class="card">
+      <p><strong>Approved:</strong> {{ '%.2f'|format(summary.paid_amount) }} XAF</p>
+      <p><strong>Pending:</strong> {{ '%.2f'|format(summary.pending_amount) }} XAF</p>
+      <p><strong>Void:</strong> {{ '%.2f'|format(summary.void_amount) }} XAF</p>
+    </article>
+  </section>
+
+  <section class="card">
+    <h3>Daily Breakdown</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Transactions</th>
+            <th>Total Amount</th>
+            <th>Approved Amount</th>
+            <th>Pending Amount</th>
+            <th>Void Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in daily_rows %}
+          <tr>
+            <td>{{ row.day }}</td>
+            <td>{{ row.tx_count }}</td>
+            <td>{{ '%.2f'|format(row.total_amount) }}</td>
+            <td>{{ '%.2f'|format(row.paid_amount) }}</td>
+            <td>{{ '%.2f'|format(row.pending_amount) }}</td>
+            <td>{{ '%.2f'|format(row.void_amount) }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6">No payments in selected date range.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>
+{% endblock %}
